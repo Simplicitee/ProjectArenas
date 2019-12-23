@@ -85,6 +85,10 @@ public class ProjectArenas extends JavaPlugin {
 		return Math.abs(config.get().getInt("SaveSpeed"));
 	}
 	
+	public void reloadConfig() {
+		config.reload();
+	}
+	
 	public File getArenasFolder() {
 		File folder = new File(getDataFolder(), "/arenas/");
 		

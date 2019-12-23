@@ -28,6 +28,7 @@ public class ArenaCommand implements CommandExecutor {
 			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas reload <name>");
 			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas automate <name>");
 			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas info <name>");
+			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas restart");
 			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas progress");
 			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas exit");
 			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas list");
@@ -66,6 +67,15 @@ public class ArenaCommand implements CommandExecutor {
 				return true;
 			} else if (arg.equalsIgnoreCase("progress")) {
 				sender.sendMessage(plugin.prefix() + " " + plugin.getManager().getCurrentLoaderProgress());
+				return true;
+			} else if (arg.equalsIgnoreCase("restart")) {
+				if (!sender.hasPermission("projectarenas.editor")) {
+					sender.sendMessage(plugin.prefix() + ChatColor.RED + " You do not have permission to edit arenas!");
+					return true;
+				}
+				
+				plugin.reloadConfig();
+				sender.sendMessage(plugin.prefix() + ChatColor.AQUA + " Reloaded config!");
 				return true;
 			}
 		} else if (args.length == 2) {
