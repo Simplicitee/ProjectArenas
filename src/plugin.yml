@@ -1,0 +1,16 @@
+name: ProjectArenas
+author: Simplicitee
+api-version: 1.13
+version: 1.0.0
+main: me.simplicitee.project.arenas.ProjectArenas
+depend: [ProjectKorra]
+commands:
+  projectarenas:
+    aliases: [pas, arenas, arena, projectarena, parena]
+    usage: /<command>
+permissions:
+  projectarenas.admin:
+    default: op
+    children:
+      projectarenas.editor: true
+      projectarenas.reload: true
