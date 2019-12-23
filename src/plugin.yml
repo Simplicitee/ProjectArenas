@@ -1,7 +1,7 @@
 name: ProjectArenas
 author: Simplicitee
 api-version: 1.13
-version: 1.0.0
+version: 1.0.1
 main: me.simplicitee.project.arenas.ProjectArenas
 depend: [ProjectKorra]
 commands:
