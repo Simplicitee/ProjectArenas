@@ -46,6 +46,11 @@ public class LoadTask {
 	}
 	
 	public boolean step() {
+		if (world == null) {
+			world = plugin.getServer().getWorld(file.getString("world"));
+			return false;
+		}
+		
 		if (current < size) {
 			int x = file.getInt("locations." + current + ".x"), y = file.getInt("locations." + current + ".y"), z = file.getInt("locations." + current + ".z");
 			Location loc = new Location(world, x, y, z);
@@ -68,7 +73,7 @@ public class LoadTask {
 			return false;
 		}
 		
-		ArenaRegion arena = new ArenaRegion(name, world, blockDatas);
+		ArenaRegion arena = new ArenaRegion(name, world.getName(), blockDatas);
 		plugin.getManager().registerArena(arena);
 		
 		if (reloading) {

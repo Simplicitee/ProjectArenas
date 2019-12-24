@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -13,12 +14,12 @@ import me.simplicitee.project.arenas.util.BlockInfo;
 public class ArenaRegion {
 
 	private String name;
-	private World world;
+	private String world;
 	private Map<Location, BlockInfo> region;
 	private Map<Integer, Set<Location>> layers;
 	private int minLayer = 256, maxLayer = -1;
 	
-	public ArenaRegion(String name, World world, Map<Location, BlockInfo> region) {
+	public ArenaRegion(String name, String world, Map<Location, BlockInfo> region) {
 		this.name = name;
 		this.world = world;
 		this.region = region;
@@ -47,7 +48,7 @@ public class ArenaRegion {
 	}
 	
 	public World getWorld() {
-		return world;
+		return Bukkit.getWorld(world);
 	}
 	
 	public int getMinLayerY() {

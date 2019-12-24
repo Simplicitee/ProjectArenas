@@ -115,7 +115,7 @@ public class ArenaEditor implements Listener {
 			}
 		}
 		
-		ArenaRegion arena = new ArenaRegion(name, w, data);
+		ArenaRegion arena = new ArenaRegion(name, w.getName(), data);
 		plugin.getManager().registerArena(arena);
 		plugin.getManager().saveArena(arena);
 		player.sendMessage(plugin.prefix() + ChatColor.GREEN + " Created arena " + name);
