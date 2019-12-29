@@ -164,7 +164,7 @@ public class ArenaManager {
 			return;
 		}
 		
-		String fileName = "arena_" + arena.getName().toLowerCase() + ".yml";
+		String fileName = arena.getName().toLowerCase() + ".dat";
 		File file = new File(folder, fileName);
 		
 		if (file.exists()) {
