@@ -4,13 +4,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
 import com.projectkorra.projectkorra.util.TempBlock;
 
 import me.simplicitee.project.arenas.arena.ArenaRegion;
 
-public class ReloadTask {
+public class ReloadTask extends ArenaTask {
 	
 	private static Map<ArenaRegion, ReloadTask> tasks = new HashMap<>();
 
@@ -21,6 +22,7 @@ public class ReloadTask {
 	private boolean firstStep;
 	
 	private ReloadTask(ArenaRegion arena) {
+		super(arena.getName());
 		this.arena = arena;
 		this.currentLayer = arena.getMinLayerY();
 		this.steps = arena.getLayer(currentLayer).iterator();
@@ -121,5 +123,31 @@ public class ReloadTask {
 		}
 		
 		return new ReloadTask(arena);
+	}
+
+	@Override
+	public String getType() {
+		return "Reloading";
+	}
+
+	@Override
+	public String getFinishMessage() {
+		return ChatColor.GREEN + "Reload of '" + ChatColor.WHITE + getArenaName() + ChatColor.GREEN + "' complete! (" + (getElapsedTime() / 1000) + "s)";
+	}
+
+	@Override
+	public String getProgressMessage() {
+		double percent = getPercentCompletion();
+		
+		return ChatColor.YELLOW + (Math.round(percent * 100) + "% of arena '" + ChatColor.WHITE + getArenaName() + ChatColor.YELLOW + "' reloaded. (" + (getElapsedTime() / 1000) + "s)");
+	}
+
+	@Override
+	public String getStatus() {
+		if (getPercentCompletion() == 0) {
+			return ChatColor.RED + "reload queued";
+		}
+		
+		return ChatColor.YELLOW + "reloading [" + ChatColor.WHITE + (Math.round(getPercentCompletion() * 100) + "%") + ChatColor.YELLOW + "]";
 	}
 }

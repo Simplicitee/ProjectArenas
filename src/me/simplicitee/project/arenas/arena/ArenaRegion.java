@@ -17,13 +17,14 @@ public class ArenaRegion {
 	private String world;
 	private Map<Location, BlockInfo> region;
 	private Map<Integer, Set<Location>> layers;
-	private int minLayer = 256, maxLayer = -1;
+	private int minLayer = 256, maxLayer = -1, size;
 	
 	public ArenaRegion(String name, String world, Map<Location, BlockInfo> region) {
 		this.name = name;
 		this.world = world;
 		this.region = region;
 		this.layers = new HashMap<>();
+		this.size = region.keySet().size();
 		
 		for (Location loc : region.keySet()) {
 			int y = loc.getBlockY();
@@ -61,6 +62,10 @@ public class ArenaRegion {
 	
 	public int getLayerCount() {
 		return layers.size();
+	}
+	
+	public int getSize() {
+		return size;
 	}
 	
 	public Set<Location> getLayer(int y) {

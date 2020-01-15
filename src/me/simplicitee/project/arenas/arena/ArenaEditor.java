@@ -4,10 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,10 +15,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import com.projectkorra.projectkorra.util.ActionBar;
 
 import me.simplicitee.project.arenas.ProjectArenas;
-import me.simplicitee.project.arenas.util.BlockInfo;
-import net.minecraft.server.v1_15_R1.BlockPosition;
-import net.minecraft.server.v1_15_R1.NBTTagCompound;
-import net.minecraft.server.v1_15_R1.TileEntity;
+import me.simplicitee.project.arenas.arena.task.CreateTask;
 
 public class ArenaEditor implements Listener {
 
@@ -93,32 +88,13 @@ public class ArenaEditor implements Listener {
 		int yMin = Math.min(a.getY(), b.getY());
 		int zMax = Math.max(a.getZ(), b.getZ());
 		int zMin = Math.min(a.getZ(), b.getZ());
-		Map<Location, BlockInfo> data = new HashMap<>();
+		int[] maxes = {xMax, yMax, zMax};
+		int[] minis = {xMin, yMin, zMin};
 		
-		for (int i = xMin; i <= xMax; i++) {
-			for (int j = yMin; j <= yMax; j++) {
-				for (int k = zMin; k <= zMax; k++) {
-					Location loc = new Location(w, i, j, k);
-					BlockInfo info;
-					BlockPosition bp = new BlockPosition(i, j, k);
-					TileEntity tile = ((CraftWorld) w).getHandle().getTileEntity(bp);
-					
-					if (tile != null) {
-						NBTTagCompound nbt = tile.save(new NBTTagCompound());
-						info = new BlockInfo(i, j, k, loc.getBlock().getBlockData(), nbt);
-					} else {
-						info = new BlockInfo(i, j, k, loc.getBlock().getBlockData());
-					}
-					
-					data.put(loc, info);
-				}
-			}
-		}
+		CreateTask creation = new CreateTask(name, w, maxes, minis);
+		plugin.getManager().queueTask(creation);
 		
-		ArenaRegion arena = new ArenaRegion(name, w.getName(), data);
-		plugin.getManager().registerArena(arena);
-		plugin.getManager().saveArena(arena);
-		player.sendMessage(plugin.prefix() + ChatColor.GREEN + " Created arena " + name);
+		player.sendMessage(plugin.prefix() + ChatColor.GREEN + " Queued creation of arena '" + ChatColor.WHITE + name + ChatColor.GREEN + "'");
 		exit(player);
 	}
 	

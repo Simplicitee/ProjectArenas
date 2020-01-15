@@ -5,6 +5,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
@@ -18,12 +19,11 @@ import me.simplicitee.project.arenas.util.BlockInfo;
 import net.minecraft.server.v1_15_R1.MojangsonParser;
 import net.minecraft.server.v1_15_R1.NBTTagCompound;
 
-public class LoadTask {
+public class LoadTask extends ArenaTask {
 
 	private static HashMap<String, LoadTask> tasks = new HashMap<>();
 	
 	private ProjectArenas plugin;
-	private String name;
 	private World world;
 	private boolean auto, reloading;
 	private NBTStorageFile file;
@@ -31,18 +31,18 @@ public class LoadTask {
 	private Map<Location, BlockInfo> blockDatas;
 	
 	public LoadTask(File f) {
+		super(f.getName().replace(".dat", ""));
 		this.plugin = ProjectArenas.getInstance();
 		this.file = new NBTStorageFile(f).read();
 		this.blockDatas = new HashMap<>();
 		
-		this.name = file.getString("name");
 		this.size = file.getInt("size");
 		this.world = plugin.getServer().getWorld(file.getString("world"));
 		this.auto = file.getBoolean("auto");
 		this.reloading = file.getBoolean("reloading");
 		this.current = 0;
 		
-		tasks.put(name, this);
+		tasks.put(arena, this);
 	}
 	
 	public boolean step() {
@@ -58,7 +58,7 @@ public class LoadTask {
 			String nbt = new String(Base64.getDecoder().decode(file.getString("locations." + current + ".nbt")));
 			NBTTagCompound tag = null;
 			
-			if (!nbt.equals("empty")) {
+			if (!nbt.equals("E")) {
 				try {
 					tag = MojangsonParser.parse(nbt);
 				} catch (CommandSyntaxException e) {
@@ -73,33 +73,24 @@ public class LoadTask {
 			return false;
 		}
 		
-		ArenaRegion arena = new ArenaRegion(name, world.getName(), blockDatas);
+		ArenaRegion arena = new ArenaRegion(this.arena, world.getName(), blockDatas);
 		plugin.getManager().registerArena(arena);
 		
 		if (reloading) {
-			plugin.getManager().queueReloading(arena);
+			plugin.getManager().queueReload(arena);
 		}
 		
 		if (auto) {
 			plugin.getManager().toggleAutoReloader(arena);
 		}
 		
-		tasks.remove(name);
+		tasks.remove(this.arena);
 		return true;
 	}
 	
-	public String getArenaName() {
-		return name;
-	}
-	
 	@Override
-	public boolean equals(Object other) {
-		if (!(other instanceof LoadTask)) {
-			return false;
-		}
-		
-		LoadTask task = (LoadTask) other;
-		return this.name.equals(task.name);
+	public String getType() {
+		return "Load";
 	}
 	
 	public static LoadTask from(String name) {
@@ -108,5 +99,20 @@ public class LoadTask {
 		}
 		
 		return new LoadTask(new File(name + ".dat"));
+	}
+
+	@Override
+	public String getFinishMessage() {
+		return ChatColor.GREEN + "Load of '" + ChatColor.WHITE + getArenaName() + ChatColor.GREEN + "' complete!";
+	}
+
+	@Override
+	public String getProgressMessage() {
+		return ChatColor.YELLOW + "Loading arena '" + ChatColor.WHITE + getArenaName() + ChatColor.YELLOW + "'";
+	}
+
+	@Override
+	public String getStatus() {
+		return "loading";
 	}
 }

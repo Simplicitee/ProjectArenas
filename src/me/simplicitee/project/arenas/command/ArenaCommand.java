@@ -115,7 +115,7 @@ public class ArenaCommand implements CommandExecutor {
 					return true;
 				}
 				
-				if (plugin.getManager().queueReloading(arena)) {
+				if (plugin.getManager().queueReload(arena)) {
 					sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " Queued reload of arena '" + ChatColor.WHITE + name + ChatColor.GREEN + "'!");
 				} else {
 					sender.sendMessage(plugin.prefix() + ChatColor.RED + " Arena '" + ChatColor.WHITE + name + ChatColor.RED + "' cannot be queued right now!");
