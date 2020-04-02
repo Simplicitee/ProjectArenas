@@ -41,7 +41,7 @@ public class ArenaManager {
 				if (!tasks.isEmpty()) {
 					ArenaTask next = tasks.peek();
 					
-					for (int i = 0; i < plugin.reloadSpeed(); i++) {
+					for (int i = 0; i < plugin.getTaskSpeed(); i++) {
 						if (next.step()) {
 							tasks.poll();
 							plugin.getServer().broadcastMessage(plugin.prefix() + " " + next.getFinishMessage());
@@ -142,7 +142,7 @@ public class ArenaManager {
 			
 		};
 		
-		run.runTaskTimer(plugin, plugin.autoInterval() * 20, plugin.autoInterval() * 20);
+		run.runTaskTimer(plugin, plugin.getAutoInterval() * 20, plugin.getAutoInterval() * 20);
 		autoreload.put(arena, run);
 		return true;
 	}

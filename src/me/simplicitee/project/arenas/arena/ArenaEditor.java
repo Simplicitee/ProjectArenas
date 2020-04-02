@@ -12,10 +12,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.projectkorra.projectkorra.util.ActionBar;
-
 import me.simplicitee.project.arenas.ProjectArenas;
 import me.simplicitee.project.arenas.arena.task.CreateTask;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 
 public class ArenaEditor implements Listener {
 
@@ -45,9 +45,9 @@ public class ArenaEditor implements Listener {
 							editors.put(player, EditStep.SELECT_TWO);
 						}
 						
-						ActionBar.sendActionBar("Right Click a corner block", player);
+						player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Right click corner block"));
 					} else if (editors.get(player) == EditStep.SELECT_TWO) {
-						ActionBar.sendActionBar("Right Click opposite corner block", player);
+						player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Right click opposite corner block"));
 					}
 				}
 			}

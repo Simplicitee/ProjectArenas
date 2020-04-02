@@ -37,9 +37,7 @@ public class ProjectArenas extends JavaPlugin {
 		
 		c.addDefault("AutomatedReloadInterval", 600);
 		c.addDefault("MessagePrefix", "&7[&aProjectArenas&7]");
-		c.addDefault("ReloadSpeed", 20000);
-		c.addDefault("LoadSpeed", 20000);
-		c.addDefault("SaveSpeed", 20000);
+		c.addDefault("TaskSpeed", 20000);
 		
 		config.save();
 	}
@@ -69,20 +67,12 @@ public class ProjectArenas extends JavaPlugin {
 		return ChatColor.translateAlternateColorCodes('&', config.get().getString("MessagePrefix"));
 	}
 	
-	public int autoInterval() {
+	public int getAutoInterval() {
 		return Math.abs(config.get().getInt("AutomatedReloadInterval"));
 	}
 	
-	public int reloadSpeed() {
-		return Math.abs(config.get().getInt("ReloadSpeed"));
-	}
-	
-	public int loadSpeed() {
-		return Math.abs(config.get().getInt("LoadSpeed"));
-	}
-	
-	public int saveSpeed() {
-		return Math.abs(config.get().getInt("SaveSpeed"));
+	public int getTaskSpeed() {
+		return Math.abs(config.get().getInt("TaskSpeed"));
 	}
 	
 	public void reloadConfig() {

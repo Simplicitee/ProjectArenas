@@ -29,7 +29,7 @@ public abstract class ArenaTask {
 		if (other instanceof ArenaTask) {
 			ArenaTask task = (ArenaTask) other;
 			
-			return this.getType() == task.getType() && this.getArenaName() == task.getArenaName();
+			return this.getType().equals(task.getType()) && this.getArenaName().equals(task.getArenaName());
 		}
 		
 		return false;

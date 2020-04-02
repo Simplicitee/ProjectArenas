@@ -163,7 +163,7 @@ public class ArenaCommand implements CommandExecutor {
 				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Layers: " + ChatColor.GREEN + arena.getLayerCount());
 				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Status: " + ChatColor.GREEN + plugin.getManager().getArenaStatus(arena));
 				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Size: " + ChatColor.GREEN + arena.getLocations().size() + ChatColor.WHITE + " blocks");
-				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Est. Reload Time: " + ChatColor.GREEN + (arena.getLocations().size() / (plugin.reloadSpeed() * 20)) + ChatColor.WHITE + " seconds");
+				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Est. Reload Time: " + ChatColor.GREEN + (arena.getLocations().size() / (plugin.getTaskSpeed() * 20)) + ChatColor.WHITE + " seconds");
 				return true;
 			}
 		}
