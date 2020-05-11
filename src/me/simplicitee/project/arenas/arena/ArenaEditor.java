@@ -1,4 +1,4 @@
-package me.simplicitee.project.arenas.arena;
+	package me.simplicitee.project.arenas.arena;
 
 import java.util.HashMap;
 import java.util.Map;

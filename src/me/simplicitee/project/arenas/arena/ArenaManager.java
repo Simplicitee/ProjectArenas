@@ -15,6 +15,7 @@ import me.simplicitee.project.arenas.ProjectArenas;
 import me.simplicitee.project.arenas.arena.task.ArenaTask;
 import me.simplicitee.project.arenas.arena.task.LoadTask;
 import me.simplicitee.project.arenas.arena.task.ReloadTask;
+import me.simplicitee.project.arenas.arena.task.StepResult;
 import me.simplicitee.project.arenas.storage.NBTStorageFile;
 
 public class ArenaManager {
@@ -38,20 +39,25 @@ public class ArenaManager {
 
 			@Override
 			public void run() {
-				if (!tasks.isEmpty()) {
-					ArenaTask next = tasks.peek();
-					
-					for (int i = 0; i < plugin.getTaskSpeed(); i++) {
-						if (next.step()) {
-							tasks.poll();
-							plugin.getServer().broadcastMessage(plugin.prefix() + " " + next.getFinishMessage());
-							break;
-						}
+				if (tasks.isEmpty()) {
+					return;
+				}
+				
+				ArenaTask next = tasks.peek();
+				
+				for (int i = 0; i < plugin.getTaskSpeed(); i++) {
+					StepResult result = next.step();
+					if (result == StepResult.FINISHED) {
+						tasks.poll();
+						plugin.getServer().broadcastMessage(plugin.prefix() + " " + next.getFinishMessage());
+						break;
+					} else if (result == StepResult.UNCHANGED) {
+						i--;
 					}
 				}
 			}	
 			
-		}.runTaskTimer(plugin, 0, 1);
+		}.runTaskTimer(plugin, 0, 2);
 	}
 	
 	public void disable() {

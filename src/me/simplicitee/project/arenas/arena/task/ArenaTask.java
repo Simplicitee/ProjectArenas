@@ -18,7 +18,7 @@ public abstract class ArenaTask {
 		return arena;
 	}
 
-	public abstract boolean step();
+	public abstract StepResult step();
 	public abstract String getType();
 	public abstract String getFinishMessage();
 	public abstract String getProgressMessage();

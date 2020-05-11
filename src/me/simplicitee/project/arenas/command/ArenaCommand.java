@@ -158,12 +158,12 @@ public class ArenaCommand implements CommandExecutor {
 					return true;
 				}
 				
-				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " -= Arena '" + ChatColor.GREEN + name + ChatColor.WHITE + "' Info =-");
+				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + bold(" Arena '") + ChatColor.GREEN + bold(name) + ChatColor.WHITE + bold("' Info "));
 				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " World: " + ChatColor.GREEN + arena.getWorld().getName());
-				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Layers: " + ChatColor.GREEN + arena.getLayerCount());
+				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Region: " + ChatColor.GREEN + arena.getRegionString());
 				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Status: " + ChatColor.GREEN + plugin.getManager().getArenaStatus(arena));
-				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Size: " + ChatColor.GREEN + arena.getLocations().size() + ChatColor.WHITE + " blocks");
-				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Est. Reload Time: " + ChatColor.GREEN + (arena.getLocations().size() / (plugin.getTaskSpeed() * 20)) + ChatColor.WHITE + " seconds");
+				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Size: " + ChatColor.GREEN + arena.getSize() + ChatColor.WHITE + " blocks");
+				sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " Est. Reload Time: " + ChatColor.GREEN + (arena.getSize() / (plugin.getTaskSpeed() * 20)) + ChatColor.WHITE + " seconds");
 				return true;
 			}
 		}
@@ -172,4 +172,7 @@ public class ArenaCommand implements CommandExecutor {
 		return true;
 	}
 	
+	private String bold(String str) {
+		return ChatColor.BOLD + str;
+	}
 }

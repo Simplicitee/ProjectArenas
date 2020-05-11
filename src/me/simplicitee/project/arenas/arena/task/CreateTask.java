@@ -1,11 +1,8 @@
 package me.simplicitee.project.arenas.arena.task;
 
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 
@@ -22,21 +19,18 @@ public class CreateTask extends ArenaTask {
 	private NBTStorageFile file;
 	private World world;
 	private int[] maxes, minis;
-	private Map<Location, BlockInfo> data;
-	private Location current;
-	private int x, y, z, i;
+	private BlockInfo[][][] data;
+	private int x, y, z;
 	
 	public CreateTask(String name, World world, int[] maxes, int[] minis) {
 		super(name);
 		this.world = world;
 		this.maxes = maxes;
 		this.minis = minis;
-		this.data = new HashMap<>();
+		this.data = new BlockInfo[Math.abs(maxes[0] - minis[0]) + 1][Math.abs(maxes[1] - minis[1]) + 1][Math.abs(maxes[2] - minis[2]) + 1];
 		this.x = minis[0];
 		this.y = minis[1];
 		this.z = minis[2];
-		this.i = 0;
-		this.current = new Location(world, x, y, z);
 		
 		file = new NBTStorageFile(ProjectArenas.getInstance().getArenasFolder(), name.toLowerCase()).read();
 		
@@ -44,60 +38,57 @@ public class CreateTask extends ArenaTask {
 		file.setString("world", world.getName());
 		file.setBoolean("auto", false);
 		file.setBoolean("reloading", false);
+		file.setInt("minX", minis[0]);
+		file.setInt("minY", minis[1]);
+		file.setInt("minZ", minis[2]);
+		file.setInt("maxX", maxes[0]);
+		file.setInt("maxY", maxes[1]);
+		file.setInt("maxZ", maxes[2]);
 	}
 	
 	@Override
-	public boolean step() {
+	public StepResult step() {
 		BlockInfo info;
 		BlockPosition bp = new BlockPosition(x, y, z);
 		TileEntity tile = ((CraftWorld) world).getHandle().getTileEntity(bp);
 		
 		if (tile != null) {
 			NBTTagCompound nbt = tile.save(new NBTTagCompound());
-			info = new BlockInfo(x, y, z, current.getBlock().getBlockData(), nbt);
+			info = new BlockInfo(x, y, z, world.getBlockAt(x, y, z).getBlockData(), nbt);
 		} else {
-			info = new BlockInfo(x, y, z, current.getBlock().getBlockData());
+			info = new BlockInfo(x, y, z, world.getBlockAt(x, y, z).getBlockData());
 		}
 		
-		data.put(current.clone(), info);
-		file.setInt("locations." + i + ".x", x);
-		file.setInt("locations." + i + ".y", y);
-		file.setInt("locations." + i + ".z", z);
-		file.setString("locations." + i + ".data", Base64.getEncoder().encodeToString(info.getData().getAsString().getBytes()));
+		data[x - minis[0]][y - minis[1]][z - minis[2]] = info;
+		String path = x + "." + y + "." + z + ".";
+		file.setString(path + "data", Base64.getEncoder().encodeToString(info.getData().getAsString().getBytes()));
 		
 		String nbt = "E";
 		if (info.getNBT() != null) {
 			nbt = info.getNBT().asString();
 		}
 		
-		file.setString("locations." + i + ".nbt", Base64.getEncoder().encodeToString(nbt.getBytes()));
+		file.setString(path + "nbt", Base64.getEncoder().encodeToString(nbt.getBytes()));
 		
 		x++;
-		
 		if (x > maxes[0]) {
 			x = minis[0];
-			y++;
-		}
-		
-		if (y > maxes[1]) {
-			y = minis[1];
 			z++;
 		}
 		
 		if (z > maxes[2]) {
-			ArenaRegion arena = new ArenaRegion(this.arena, world.getName(), data);
-			ProjectArenas.getInstance().getManager().registerArena(arena);
-			file.setInt("size", arena.getSize());
-			file.write();
-			return true;
+			z = minis[2];
+			y++;
 		}
 		
-		current.setX(x);
-		current.setY(y);
-		current.setZ(z);
-		i++;
+		if (y > maxes[1]) {
+			ArenaRegion arena = new ArenaRegion(this.arena, world.getName(), data, minis[0], minis[1], minis[2], maxes[0], maxes[1], maxes[2]);
+			ProjectArenas.getInstance().getManager().registerArena(arena);
+			file.write();
+			return StepResult.FINISHED;
+		}
 		
-		return false;
+		return StepResult.CHANGED;
 	}
 
 	@Override

@@ -1,13 +1,9 @@
 package me.simplicitee.project.arenas.arena.task;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-
-import com.projectkorra.projectkorra.util.TempBlock;
 
 import me.simplicitee.project.arenas.arena.ArenaRegion;
 
@@ -16,18 +12,19 @@ public class ReloadTask extends ArenaTask {
 	private static Map<ArenaRegion, ReloadTask> tasks = new HashMap<>();
 
 	private ArenaRegion arena;
-	private Iterator<Location> steps;
-	private int currentLayer, completedSteps, totalSteps;
+	private int x, y, z;
+	private int completedSteps, totalSteps;
 	private long startTime, endTime;
 	private boolean firstStep;
 	
 	private ReloadTask(ArenaRegion arena) {
 		super(arena.getName());
 		this.arena = arena;
-		this.currentLayer = arena.getMinLayerY();
-		this.steps = arena.getLayer(currentLayer).iterator();
 		this.completedSteps = 0;
-		this.totalSteps = arena.getLocations().size();
+		this.totalSteps = arena.getSize();
+		this.x = arena.getMinX();
+		this.y = arena.getMinY();
+		this.z = arena.getMinZ();
 		this.startTime = 0;
 		this.endTime = -1;
 		this.firstStep = true;
@@ -42,35 +39,37 @@ public class ReloadTask extends ArenaTask {
 	 * Progresses the reloading of the arena to the next step
 	 * @return true if no more steps to complete, false otherwise
 	 */
-	public boolean step() {
+	public StepResult step() {
 		if (firstStep) {
 			startTime = System.currentTimeMillis();
 			firstStep = false;
 		}
 		
-		if (steps.hasNext()) {
-			Location next = steps.next();
-			
-			if (TempBlock.isTempBlock(next.getBlock())) {
-				TempBlock.get(next.getBlock()).revertBlock();
-			}
-			
-			arena.getBlockInfo(next).update(arena.getWorld());
-			
-			completedSteps++;
-			return false;
+		StepResult result = StepResult.UNCHANGED;
+		if (arena.getBlockInfo(x, y, z).reload(arena.getWorld())) {
+			result = StepResult.CHANGED;
+		}
+		completedSteps++;
+		
+		if (++x <= arena.getMaxX()) {
+			return result;
 		} else {
-			currentLayer++;
-			
-			if (currentLayer <= arena.getMaxLayerY()) {
-				steps = arena.getLayer(currentLayer).iterator();
-				return false;
-			}
+			x = arena.getMinX();
+		}
+		
+		if (++z <= arena.getMaxZ()) {
+			return result;
+		} else {
+			z = arena.getMinZ();
+		}
+		
+		if (++y <= arena.getMaxY()) {
+			return result;
 		}
 		
 		endTime = System.currentTimeMillis();
 		tasks.remove(arena);
-		return true;
+		return StepResult.FINISHED;
 	}
 	
 	public int getCompletedSteps() {
@@ -102,7 +101,6 @@ public class ReloadTask extends ArenaTask {
 	}
 	
 	public void delete() {
-		steps = null;
 		tasks.remove(arena);
 		arena = null;
 	}

@@ -1,10 +1,11 @@
 package me.simplicitee.project.arenas.util;
 
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
+
+import com.projectkorra.projectkorra.util.TempBlock;
 
 import net.minecraft.server.v1_15_R1.BlockPosition;
 import net.minecraft.server.v1_15_R1.NBTTagCompound;
@@ -54,12 +55,17 @@ public class BlockInfo {
 		return pos;
 	}
 	
-	public Location getLocation(World world) {
-		return new Location(world, x, y, z);
-	}
-	
-	public void update(World world) {
-		Block b = getLocation(world).getBlock();
+	public boolean reload(World world) {
+		Block b = world.getBlockAt(x, y, z);
+		
+		if (TempBlock.isTempBlock(b)) {
+			TempBlock.get(b).revertBlock();
+		}
+		
+		if (b.getBlockData().matches(data)) {
+			return false;
+		}
+		
 		b.setBlockData(data, false);
 		
 		if (info != null) {
@@ -69,5 +75,7 @@ public class BlockInfo {
 				tile.load(info);
 			}
 		}
+		
+		return true;
 	}
 }

@@ -3,10 +3,8 @@ package me.simplicitee.project.arenas.arena.task;
 import java.io.File;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 
@@ -27,53 +25,72 @@ public class LoadTask extends ArenaTask {
 	private World world;
 	private boolean auto, reloading;
 	private NBTStorageFile file;
-	private int current, size;
-	private Map<Location, BlockInfo> blockDatas;
+	private int x, y, z, minX, maxX, minY, maxY, minZ, maxZ;
+	private BlockInfo[][][] blockDatas;
 	
 	public LoadTask(File f) {
 		super(f.getName().replace(".dat", ""));
 		this.plugin = ProjectArenas.getInstance();
 		this.file = new NBTStorageFile(f).read();
-		this.blockDatas = new HashMap<>();
 		
-		this.size = file.getInt("size");
+		this.minX = file.getInt("minX");
+		this.minY = file.getInt("minY");
+		this.minZ = file.getInt("minZ");
+		this.maxX = file.getInt("maxX");
+		this.maxY = file.getInt("maxY");
+		this.maxZ = file.getInt("maxZ");
+		this.x = minX;
+		this.y = minY;
+		this.z = minZ;
+		this.blockDatas = new BlockInfo[maxX - minX + 1][maxY - minY + 1][maxZ - minZ + 1];
 		this.world = plugin.getServer().getWorld(file.getString("world"));
 		this.auto = file.getBoolean("auto");
 		this.reloading = file.getBoolean("reloading");
-		this.current = 0;
 		
 		tasks.put(arena, this);
 	}
 	
-	public boolean step() {
+	public StepResult step() {
 		if (world == null) {
 			world = plugin.getServer().getWorld(file.getString("world"));
-			return false;
+			return StepResult.CHANGED;
 		}
 		
-		if (current < size) {
-			int x = file.getInt("locations." + current + ".x"), y = file.getInt("locations." + current + ".y"), z = file.getInt("locations." + current + ".z");
-			Location loc = new Location(world, x, y, z);
-			BlockData bData = plugin.getServer().createBlockData(new String(Base64.getDecoder().decode(file.getString("locations." + current + ".data"))));
-			String nbt = new String(Base64.getDecoder().decode(file.getString("locations." + current + ".nbt")));
-			NBTTagCompound tag = null;
-			
-			if (!nbt.equals("E")) {
-				try {
-					tag = MojangsonParser.parse(nbt);
-				} catch (CommandSyntaxException e) {
-					tag = null;
-				}
+		String path = x + "." + y + "." + z + ".";
+		BlockData bData = plugin.getServer().createBlockData(new String(Base64.getDecoder().decode(file.getString(path + "data"))));
+		String nbt = new String(Base64.getDecoder().decode(file.getString(path + "nbt")));
+		NBTTagCompound tag = null;
+		
+		if (!nbt.equals("E")) {
+			try {
+				tag = MojangsonParser.parse(nbt);
+			} catch (CommandSyntaxException e) {
+				tag = null;
 			}
-			
-			BlockInfo info = new BlockInfo(x, y, z, bData, tag);
-			blockDatas.put(loc, info);
-			
-			current++;
-			return false;
 		}
 		
-		ArenaRegion arena = new ArenaRegion(this.arena, world.getName(), blockDatas);
+		blockDatas[x - minX][y - minY][z - minZ] = new BlockInfo(x, y, z, bData, tag);
+		
+		x++;
+		if (x <= maxX) {
+			return StepResult.CHANGED;
+		} else {
+			x = minX;
+		}
+		
+		z++;
+		if (z <= maxZ) {
+			return StepResult.CHANGED;
+		} else {
+			z = minZ;
+		}
+		
+		y++;
+		if (y <= maxY) {
+			return StepResult.CHANGED;
+		}
+		
+		ArenaRegion arena = new ArenaRegion(this.arena, world.getName(), blockDatas, minX, minY, minZ, maxX, maxY, maxZ);
 		plugin.getManager().registerArena(arena);
 		
 		if (reloading) {
@@ -85,7 +102,7 @@ public class LoadTask extends ArenaTask {
 		}
 		
 		tasks.remove(this.arena);
-		return true;
+		return StepResult.FINISHED;
 	}
 	
 	@Override
