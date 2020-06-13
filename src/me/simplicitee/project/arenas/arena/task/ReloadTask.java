@@ -6,6 +6,7 @@ import java.util.Map;
 import org.bukkit.ChatColor;
 
 import me.simplicitee.project.arenas.arena.ArenaRegion;
+import me.simplicitee.project.arenas.util.BlockInfo;
 
 public class ReloadTask extends ArenaTask {
 	
@@ -28,6 +29,7 @@ public class ReloadTask extends ArenaTask {
 		this.startTime = 0;
 		this.endTime = -1;
 		this.firstStep = true;
+		this.async = false;
 		tasks.put(arena, this);
 	}
 	
@@ -39,37 +41,38 @@ public class ReloadTask extends ArenaTask {
 	 * Progresses the reloading of the arena to the next step
 	 * @return true if no more steps to complete, false otherwise
 	 */
-	public StepResult step() {
+	@Override
+	public boolean step() {
 		if (firstStep) {
 			startTime = System.currentTimeMillis();
 			firstStep = false;
 		}
 		
-		StepResult result = StepResult.UNCHANGED;
-		if (arena.getBlockInfo(x, y, z).reload(arena.getWorld())) {
-			result = StepResult.CHANGED;
+		BlockInfo info = arena.getBlockInfo(x, y, z);
+		if (info != null) {
+			info.reload(arena.getWorld());
 		}
 		completedSteps++;
 		
 		if (++x <= arena.getMaxX()) {
-			return result;
+			return false;
 		} else {
 			x = arena.getMinX();
 		}
 		
 		if (++z <= arena.getMaxZ()) {
-			return result;
+			return false;
 		} else {
 			z = arena.getMinZ();
 		}
 		
 		if (++y <= arena.getMaxY()) {
-			return result;
+			return false;
 		}
 		
 		endTime = System.currentTimeMillis();
 		tasks.remove(arena);
-		return StepResult.FINISHED;
+		return true;
 	}
 	
 	public int getCompletedSteps() {

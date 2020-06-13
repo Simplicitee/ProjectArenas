@@ -5,8 +5,8 @@ version: 1.0.5
 main: me.simplicitee.project.arenas.ProjectArenas
 depend: [ProjectKorra]
 commands:
-  projectarenas:
-    aliases: [pas, arenas, arena, projectarena, parena]
+  arena:
+    aliases: [pas, arenas, projectarenas, projectarena, parena]
     usage: /<command>
 permissions:
   projectarenas.admin:

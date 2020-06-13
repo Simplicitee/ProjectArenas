@@ -3,10 +3,12 @@ package me.simplicitee.project.arenas.arena;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -15,7 +17,6 @@ import me.simplicitee.project.arenas.ProjectArenas;
 import me.simplicitee.project.arenas.arena.task.ArenaTask;
 import me.simplicitee.project.arenas.arena.task.LoadTask;
 import me.simplicitee.project.arenas.arena.task.ReloadTask;
-import me.simplicitee.project.arenas.arena.task.StepResult;
 import me.simplicitee.project.arenas.storage.NBTStorageFile;
 
 public class ArenaManager {
@@ -24,17 +25,15 @@ public class ArenaManager {
 	private Queue<ArenaTask> tasks;
 	private Map<String, ArenaRegion> regions;
 	private Map<ArenaRegion, BukkitRunnable> autoreload;
+	private boolean loading = false;
 	
 	public ArenaManager(ProjectArenas plugin) {
 		this.plugin = plugin;
 		this.tasks = new LinkedList<>();
 		this.regions = new HashMap<>();
 		this.autoreload = new HashMap<>();
-		this.startTasks();
 		this.loadStored();
-	}
-	
-	public void startTasks() {
+		
 		new BukkitRunnable() {
 
 			@Override
@@ -43,28 +42,30 @@ public class ArenaManager {
 					return;
 				}
 				
-				ArenaTask next = tasks.peek();
-				
-				for (int i = 0; i < plugin.getTaskSpeed(); i++) {
-					StepResult result = next.step();
-					if (result == StepResult.FINISHED) {
-						tasks.poll();
-						plugin.getServer().broadcastMessage(plugin.prefix() + " " + next.getFinishMessage());
-						break;
-					} else if (result == StepResult.UNCHANGED) {
-						i--;
-					}
+				ArenaTask current = tasks.peek();
+				if (!current.hasStarted()) {
+					current.startTask();
+				} else if (current.isCancelled()) {
+					tasks.poll();
 				}
-			}	
+			}
 			
-		}.runTaskTimer(plugin, 0, 2);
+		}.runTaskTimer(plugin, 1, 20);
 	}
 	
 	public void disable() {
 		this.saveSettings();
 	}
 	
+	public Set<String> getArenas() {
+		return new HashSet<>(regions.keySet());
+	}
+	
 	public String getCurrentLoaderProgress() {
+		if (loading) {
+			return ChatColor.RED + "Loading arenas!";
+		}
+		
 		if (tasks.isEmpty()) {
 			return ChatColor.GREEN + "No loaders running!";
 		}
@@ -148,7 +149,7 @@ public class ArenaManager {
 			
 		};
 		
-		run.runTaskTimer(plugin, plugin.getAutoInterval() * 20, plugin.getAutoInterval() * 20);
+		run.runTaskTimer(plugin, 1200 * autoreload.size() + plugin.getAutoInterval() * 20, plugin.getAutoInterval() * 20);
 		autoreload.put(arena, run);
 		return true;
 	}
@@ -188,13 +189,58 @@ public class ArenaManager {
 		if (!folder.exists()) {
 			folder.mkdirs();
 		} else {
-			File[] files = folder.listFiles();
+			final File[] files = folder.listFiles();
+			LoadTask current = null;
+			int i = 0;
 			
-			for (File file : files) {
-				if (file.getName().endsWith(".dat")) {
-					tasks.add(new LoadTask(file));
+			for (i = 0; i < files.length; i++) {
+				if (files[i].getName().endsWith(".dat")) {
+					current = new LoadTask(files[i]);
+					break;
 				}
 			}
+			
+			if (current == null) {
+				return;
+			}
+			
+			final int init = i;
+			final LoadTask start = current;
+			loading = true;
+			
+			new BukkitRunnable() {
+				
+				private LoadTask working = start;
+				private int index = init;
+				
+				@Override
+				public void run() {
+					if (this.isCancelled()) {
+						return;
+					}
+					
+					if (index >= files.length) {
+						loading = false;
+						cancel();
+						return;
+					}
+					
+					for (int i = 0; i < plugin.getTaskSpeed(); i++) {
+						if (working.step()) {
+							plugin.getServer().broadcastMessage(plugin.prefix() + " " + working.getFinishMessage());
+							
+							for (int temp = ++index; temp < files.length; index = ++temp) {
+								if (files[temp].getName().endsWith(".dat")) {
+									working = new LoadTask(files[temp]);
+									break;
+								}
+							}
+							
+							break;
+						}
+					}
+				}
+			}.runTaskTimerAsynchronously(plugin, 0, 1);
 		}
 	}
 	
@@ -215,5 +261,9 @@ public class ArenaManager {
 		
 		regions.clear();
 		autoreload.clear();
+	}
+	
+	public boolean isLoading() {
+		return loading;
 	}
 }

@@ -1,37 +1,45 @@
 package me.simplicitee.project.arenas.command;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import me.simplicitee.project.arenas.ProjectArenas;
 import me.simplicitee.project.arenas.arena.ArenaRegion;
 
-public class ArenaCommand implements CommandExecutor {
+public class ArenaCommand implements CommandExecutor, TabCompleter {
 	
 	private ProjectArenas plugin;
+	private String[] subcommands = { "create", "delete", "reload", "automate", "info", "restart", "progress", "exit", "list" };
+	private String[] hasArg = { "create", "delete", "reload", "automate", "info" };
 	
 	public ArenaCommand(ProjectArenas plugin) {
 		this.plugin = plugin;
 		
-		plugin.getCommand("projectarenas").setExecutor(this);
+		plugin.getCommand("arena").setExecutor(this);
+		plugin.getCommand("arena").setTabCompleter(this);
 	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (args.length == 0) {
 			sender.sendMessage(plugin.prefix() + ChatColor.WHITE + " - Commands - <name> is an arena name");
-			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas create <name>");
-			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas delete <name>");
-			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas reload <name>");
-			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas automate <name>");
-			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas info <name>");
-			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas restart");
-			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas progress");
-			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas exit");
-			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /projectarenas list");
+			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /arena create <name>");
+			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /arena delete <name>");
+			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /arena reload <name>");
+			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /arena automate <name>");
+			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /arena info <name>");
+			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /arena restart");
+			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /arena progress");
+			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /arena exit");
+			sender.sendMessage(plugin.prefix() + ChatColor.GREEN + " /arena list");
 			return true;
 		} else if (args.length == 1) {
 			String arg = args[0];
@@ -174,5 +182,30 @@ public class ArenaCommand implements CommandExecutor {
 	
 	private String bold(String str) {
 		return ChatColor.BOLD + str;
+	}
+
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+		List<String> possibles = new ArrayList<>();
+		
+		if (args.length == 1) {
+			for (String s : subcommands) {
+				if (s.toLowerCase().startsWith(args[0].toLowerCase())) {
+					possibles.add(s);
+				}
+			}
+		} else if (args.length == 2 && Arrays.asList(hasArg).contains(args[0].toLowerCase())) {
+			if (args[0].equalsIgnoreCase("create")) {
+				possibles.add("<name>");
+			} else {
+				for (String name : plugin.getManager().getArenas()) {
+					if (name.toLowerCase().startsWith(args[1].toLowerCase())) {
+						possibles.add(name);
+					}
+				}
+			}
+		}
+		
+		return possibles;
 	}
 }

@@ -60,15 +60,15 @@ public class ArenaRegion {
 	}
 	
 	public int getLength() {
-		return maxX - minX;
+		return maxX - minX + 1;
 	}
 	
 	public int getHeight() {
-		return maxY - minY;
+		return maxY - minY + 1;
 	}
 	
 	public int getWidth() {
-		return maxZ - minZ;
+		return maxZ - minZ + 1;
 	}
 	
 	public int getSize() {

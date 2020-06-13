@@ -88,10 +88,8 @@ public class ArenaEditor implements Listener {
 		int yMin = Math.min(a.getY(), b.getY());
 		int zMax = Math.max(a.getZ(), b.getZ());
 		int zMin = Math.min(a.getZ(), b.getZ());
-		int[] maxes = {xMax, yMax, zMax};
-		int[] minis = {xMin, yMin, zMin};
 		
-		CreateTask creation = new CreateTask(name, w, maxes, minis);
+		CreateTask creation = new CreateTask(name, w, xMin, yMin, zMin, xMax, yMax, zMax);
 		plugin.getManager().queueTask(creation);
 		
 		player.sendMessage(plugin.prefix() + ChatColor.GREEN + " Queued creation of arena '" + ChatColor.WHITE + name + ChatColor.GREEN + "'");

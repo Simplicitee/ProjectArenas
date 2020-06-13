@@ -1,7 +1,6 @@
 package me.simplicitee.project.arenas.arena.task;
 
 import java.io.File;
-import java.util.Base64;
 import java.util.HashMap;
 
 import org.bukkit.ChatColor;
@@ -50,44 +49,51 @@ public class LoadTask extends ArenaTask {
 		tasks.put(arena, this);
 	}
 	
-	public StepResult step() {
+	@Override
+	public boolean step() {
 		if (world == null) {
 			world = plugin.getServer().getWorld(file.getString("world"));
-			return StepResult.CHANGED;
+			return false;
+		}
+		
+		if (x > maxX || y > maxY || z > maxZ) {
+			return false;
 		}
 		
 		String path = x + "." + y + "." + z + ".";
-		BlockData bData = plugin.getServer().createBlockData(new String(Base64.getDecoder().decode(file.getString(path + "data"))));
-		String nbt = new String(Base64.getDecoder().decode(file.getString(path + "nbt")));
-		NBTTagCompound tag = null;
-		
-		if (!nbt.equals("E")) {
-			try {
-				tag = MojangsonParser.parse(nbt);
-			} catch (CommandSyntaxException e) {
-				tag = null;
+		try {
+			BlockData bData = plugin.getServer().createBlockData(file.getString(path + "data"));
+			String nbt = file.getString(path + "nbt");
+			NBTTagCompound tag = null;
+			
+			if (!nbt.equals("E")) {
+				try {
+					tag = MojangsonParser.parse(nbt);
+				} catch (CommandSyntaxException e) {
+					tag = null;
+				}
 			}
-		}
-		
-		blockDatas[x - minX][y - minY][z - minZ] = new BlockInfo(x, y, z, bData, tag);
+			
+			blockDatas[x - minX][y - minY][z - minZ] = new BlockInfo(x, y, z, bData, tag);
+		} catch (Exception e) {}
 		
 		x++;
 		if (x <= maxX) {
-			return StepResult.CHANGED;
+			return false;
 		} else {
 			x = minX;
 		}
 		
 		z++;
 		if (z <= maxZ) {
-			return StepResult.CHANGED;
+			return false;
 		} else {
 			z = minZ;
 		}
 		
 		y++;
 		if (y <= maxY) {
-			return StepResult.CHANGED;
+			return false;
 		}
 		
 		ArenaRegion arena = new ArenaRegion(this.arena, world.getName(), blockDatas, minX, minY, minZ, maxX, maxY, maxZ);
@@ -102,7 +108,7 @@ public class LoadTask extends ArenaTask {
 		}
 		
 		tasks.remove(this.arena);
-		return StepResult.FINISHED;
+		return true;
 	}
 	
 	@Override
